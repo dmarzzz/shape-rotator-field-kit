@@ -165,6 +165,38 @@ These tools are designed to compose. Some common patterns:
   time, but answers locally thereafter. content-pipeline itself is
   offline; only your agent's underlying LM might hit the network.
 
+## Tool Exchange (cohort-contributed tools)
+
+The [`tool-exchange/`](./tool-exchange) directory is the open catalog
+of tools the program cohort is sharing. This is **not** the same as
+the pinned submodules at the root; those are the three curated tools
+the kit ships. Tool Exchange is everything else anyone in the cohort
+has brought.
+
+Structure:
+
+- [`tool-exchange/submissions/<slug>.md`](./tool-exchange/submissions)
+  — one markdown file per tool. Follows
+  [`tool-exchange/TEMPLATE.md`](./tool-exchange/TEMPLATE.md). New
+  submissions arrive as PRs.
+- [`tool-exchange/workshop/`](./tool-exchange/workshop) — a 4-session
+  workshop series (week of May 4-8) where submitters demo, attendees
+  dogfood live, and promising tools may get promoted to the kit proper.
+  Signups live in [`workshop/signups.md`](./tool-exchange/workshop/signups.md);
+  slides land in [`workshop/slides.html`](./tool-exchange/workshop/slides.html)
+  when ready.
+
+An agent helping a user contribute should:
+
+1. Copy `tool-exchange/TEMPLATE.md` to
+   `tool-exchange/submissions/<user-tool-slug>.md`.
+2. Fill it in based on the user's actual tool (ask questions rather
+   than hallucinate install commands or platform support).
+3. Open a PR titled `tool-exchange: add <tool-name>`.
+
+If the user is asking about "what's out there" during the program,
+`ls tool-exchange/submissions/` is the quick answer.
+
 ## Environment assumptions
 
 - Python 3.12 recommended (3.10+ will also work for research-swarm;

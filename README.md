@@ -30,4 +30,13 @@ rotate help                         # full command list
 | [`voxterm`](./voxterm) | local voice transcription TUI with P2P |
 | [`content-pipeline`](./content-pipeline) | turns a research run or transcript into a blog post, tweet thread, and explainer video |
 
+## Bringing your own
+
+[`tool-exchange/`](./tool-exchange) is the shared directory for tools
+cohort members are contributing. PR a markdown file under
+[`tool-exchange/submissions/`](./tool-exchange/submissions) to list
+your tool. There's also a 4-session workshop series the week of May
+4-8 — see [`tool-exchange/workshop/`](./tool-exchange/workshop) for
+the schedule and the signup.
+
 See [`AGENTS.md`](./AGENTS.md) for how agents use these tools.
