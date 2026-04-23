@@ -112,26 +112,58 @@ git submodule update --init --recursive
 - **What NOT to do:** don't spin up a cloud transcription service for
   the same task. This tool is the cloud replacement.
 
-### `content-pipeline/` — _coming soon_
+### `content-pipeline/` — source → blog + tweet thread + explainer video
 
-Not yet included. Will appear as a third submodule once the operator
-pushes it. When it shows up, it'll turn research outputs and
-transcripts into shareable visuals.
+- **Use when:** the user has produced something worth publishing
+  (a research-swarm run, a voxterm transcript, a draft markdown
+  document) and wants any subset of: a blog post, a tweet thread,
+  a self-contained animated explainer video.
+- **What it does:** runs a small orchestrator that materializes a
+  canonical `source.md` from whatever input kind you have, snapshots
+  the exact prompts + aesthetic used by this run into the run folder
+  for reproducibility, and emits a `NEXT.md` that tells an LLM agent
+  which prompt to execute with which paths to get each output.
+- **Pluggable:** formats live under `content-pipeline/formats/`, input
+  adapters under `adapters/`, voice/style overrides under `aesthetic/`.
+  Add a format by creating a new subdir with a `prompt.md`.
+- **Aesthetic:** personal voice/style files under `aesthetic/` (other
+  than `default.yaml`) are gitignored. The pipeline will never
+  accidentally push someone's personal voice profile into a PR.
+- **Quickest run from the field-kit root:**
+  ```bash
+  rotate content --trace ~/Flashbots/.../runs/20260422-X.json
+  rotate content --transcript ~/Documents/voxterm-transcripts/2026-04-22.md
+  rotate content --markdown notes.md --formats blog
+  ```
+- **Outputs land in** `content-pipeline/output/<date>-<slug>/`. That
+  folder is gitignored; nothing from a real run leaks into a PR.
+- **What NOT to do:** don't commit anything under `output/`. Don't
+  edit `aesthetic/default.yaml` for personal taste; copy it to
+  `aesthetic/<your-handle>.yaml` and edit that.
 
 ## Using tools together
 
 These tools are designed to compose. Some common patterns:
 
-- **Voice-in, research-out:** record a voxterm transcript of someone
-  describing a research question → pipe the transcript into
-  `research-agent "..."` as the question → share the grounded synthesis.
+- **Research → publish:** `rotate research "..."` runs the agent; the
+  run log in `research-swarm/runs/*.json` is a research trace. Feed
+  that trace to `rotate content --trace runs/<file>.json` to produce
+  a blog post, a tweet thread, and an explainer video.
+- **Voice → publish:** `rotate vox` produces a transcript in
+  `~/Documents/voxterm-transcripts/`. Feed that to
+  `rotate content --transcript ~/Documents/voxterm-transcripts/<file>.md`
+  for the same trio of outputs.
+- **Notes → publish:** hand-written markdown also works via
+  `rotate content --markdown notes.md`.
 - **Cumulative archive:** every research-swarm run adds to
   `~/world_knowledge/`. Transcripts land in
-  `~/Documents/voxterm-transcripts/`. Both are searchable locally; a
-  sibling tool could index both into one view.
+  `~/Documents/voxterm-transcripts/`. Content-pipeline runs land in
+  `content-pipeline/output/<date>-<slug>/`. All three are searchable
+  locally; nothing leaves your machine unless you publish it.
 - **Offline friendly:** voxterm is fully offline. research-swarm with
   an Ollama LM + an empty query cache still wants network the first
-  time, but answers locally thereafter.
+  time, but answers locally thereafter. content-pipeline itself is
+  offline; only your agent's underlying LM might hit the network.
 
 ## Environment assumptions
 

@@ -14,6 +14,7 @@ Then from anywhere on your machine:
 ```bash
 rotate research "what is Loopix?"   # DSPy ReAct research agent
 rotate vox                          # voxterm voice transcription TUI
+rotate content --trace run.json     # blog + tweet thread + explainer video
 rotate doctor                       # health check
 rotate update                       # bump submodules to upstream main
 rotate help                         # full command list
@@ -27,6 +28,6 @@ rotate help                         # full command list
 |---|---|
 | [`research-swarm`](./research-swarm) | DSPy ReAct research agent |
 | [`voxterm`](./voxterm) | local voice transcription TUI with P2P |
-| `content-pipeline` | _coming soon_ |
+| [`content-pipeline`](./content-pipeline) | turns a research run or transcript into a blog post, tweet thread, and explainer video |
 
 See [`AGENTS.md`](./AGENTS.md) for how agents use these tools.

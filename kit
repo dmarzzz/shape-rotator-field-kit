@@ -61,6 +61,12 @@ case "$cmd" in
     else
       miss "research-swarm  venv missing — run 'kit setup'"
     fi
+    # content-pipeline
+    if [ -f "$KIT_ROOT/content-pipeline/run.py" ]; then
+      ok "content-pipeline $KIT_ROOT/content-pipeline/run.py"
+    else
+      miss "content-pipeline submodule missing — run 'kit setup'"
+    fi
     # .env sanity
     if [ -f "$KIT_ROOT/research-swarm/.env" ]; then
       if grep -qE '^(LM_MODEL|ANTHROPIC_API_KEY)=' "$KIT_ROOT/research-swarm/.env"; then
@@ -100,6 +106,17 @@ case "$cmd" in
       exit 1
     fi
     exec voxterm "$@"
+    ;;
+
+  content)
+    # Thin wrapper around content-pipeline's run.py. Passes all args
+    # through, so `rotate content --trace foo.json --slug bar` works.
+    CP_RUN="$KIT_ROOT/content-pipeline/run.py"
+    if [ ! -f "$CP_RUN" ]; then
+      miss "content-pipeline submodule missing. Run: kit setup"
+      exit 1
+    fi
+    exec python3 "$CP_RUN" "$@"
     ;;
 
   install-global)
@@ -268,9 +285,12 @@ ${BOLD}install & maintain${RESET}
 ${BOLD}invoke tools${RESET}
   kit research "question"   run the research-swarm agent
   kit vox                   launch voxterm
+  kit content --trace ...   run content-pipeline (blog + thread + video)
 
 ${DIM}All subcommands pass extra args through.
-Example:  rotate research --parallel "survey modern mixnets"${RESET}
+Examples:
+  rotate research --parallel "survey modern mixnets"
+  rotate content --trace runs/20260422-...json --formats blog,tweet-thread${RESET}
 EOF
     ;;
 

@@ -4,3 +4,6 @@
 [submodule "voxterm"]
 	path = voxterm
 	url = https://github.com/dmarzzz/VoxTerm.git
+[submodule "content-pipeline"]
+	path = content-pipeline
+	url = https://github.com/dmarzzz/content-pipeline.git
