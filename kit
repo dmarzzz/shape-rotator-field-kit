@@ -1,0 +1,114 @@
+#!/usr/bin/env bash
+# kit — unified entry point for the shape rotator field kit
+#
+# Subcommands:
+#   kit setup                  run the full installer (same as `bash setup.sh`)
+#   kit doctor                 check every tool is installed and reachable
+#   kit update                 bump every submodule to its upstream main
+#   kit research "..."         invoke the research-swarm agent
+#   kit vox                    launch voxterm
+#   kit help                   this help
+
+set -euo pipefail
+
+KIT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$KIT_ROOT"
+
+if [ -t 1 ]; then
+  BOLD='\033[1m'; DIM='\033[2m'; CYAN='\033[36m'; GREEN='\033[32m'
+  YELLOW='\033[33m'; RED='\033[31m'; RESET='\033[0m'
+else
+  BOLD=''; DIM=''; CYAN=''; GREEN=''; YELLOW=''; RED=''; RESET=''
+fi
+
+ok()   { printf "${GREEN}✓${RESET} %s\n" "$*"; }
+miss() { printf "${RED}✗${RESET} %s\n" "$*"; }
+warn() { printf "${YELLOW}!${RESET} %s\n" "$*"; }
+
+cmd="${1:-help}"
+shift || true
+
+case "$cmd" in
+  setup)
+    exec bash "$KIT_ROOT/setup.sh" "$@"
+    ;;
+
+  doctor)
+    printf "${BOLD}shape-rotator-field-kit · doctor${RESET}\n\n"
+    # voxterm
+    if command -v voxterm >/dev/null 2>&1; then
+      ok "voxterm         $(command -v voxterm)"
+    else
+      miss "voxterm         not on PATH — run 'kit setup'"
+    fi
+    # research-swarm
+    if [ -x "$KIT_ROOT/research-swarm/.venv/bin/research-agent" ]; then
+      ok "research-swarm  $KIT_ROOT/research-swarm/.venv/bin/research-agent"
+    else
+      miss "research-swarm  venv missing — run 'kit setup'"
+    fi
+    # .env sanity
+    if [ -f "$KIT_ROOT/research-swarm/.env" ]; then
+      if grep -qE '^(LM_MODEL|ANTHROPIC_API_KEY)=' "$KIT_ROOT/research-swarm/.env"; then
+        ok "research-swarm/.env  LM configured"
+      else
+        warn "research-swarm/.env  exists but no LM_MODEL / ANTHROPIC_API_KEY set"
+      fi
+    else
+      warn "research-swarm/.env  missing — copy .env.example and set an LM"
+    fi
+    # submodules pinned
+    echo
+    printf "${BOLD}pinned commits:${RESET}\n"
+    git submodule status | sed 's/^/  /'
+    ;;
+
+  update)
+    printf "${BOLD}bumping every submodule to upstream main${RESET}\n\n"
+    git submodule update --remote --recursive
+    git submodule status | sed 's/^/  /'
+    echo
+    warn "pins are updated in the working tree but NOT committed."
+    echo "  review changes, then:  git add . && git commit -m 'bump submodules'"
+    ;;
+
+  research)
+    if [ ! -x "$KIT_ROOT/bin/research-agent" ]; then
+      miss "research-agent wrapper missing. Run: kit setup"
+      exit 1
+    fi
+    exec "$KIT_ROOT/bin/research-agent" "$@"
+    ;;
+
+  vox)
+    if ! command -v voxterm >/dev/null 2>&1; then
+      miss "voxterm not on PATH. Run: kit setup"
+      exit 1
+    fi
+    exec voxterm "$@"
+    ;;
+
+  help|-h|--help|"")
+    cat <<EOF
+${BOLD}kit${RESET} — shape-rotator-field-kit dispatcher
+
+${BOLD}install & maintain${RESET}
+  kit setup                 bootstrap every tool (idempotent)
+  kit update                bump every submodule to upstream main
+  kit doctor                check each tool is installed + configured
+
+${BOLD}invoke tools${RESET}
+  kit research "question"   run the research-swarm agent
+  kit vox                   launch voxterm
+
+${DIM}All subcommands pass extra args through.
+Example:  kit research --parallel "survey modern mixnets"${RESET}
+EOF
+    ;;
+
+  *)
+    miss "unknown subcommand: $cmd"
+    echo
+    exec "$0" help
+    ;;
+esac
