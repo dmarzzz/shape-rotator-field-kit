@@ -1,7 +1,26 @@
 # AGENTS.md
 
 Instructions for LLM agents (Claude Code, Cursor, Codex, Claude Desktop,
-raw DSPy / LangGraph / anything) working inside this monorepo.
+raw DSPy / LangGraph / anything) that want to *use* the shape-rotator
+tools from any working directory on this machine.
+
+## How to find this file from anywhere
+
+If the operator has run `srk install-global` (or `./kit install-global`),
+two environment variables are available in every shell:
+
+```
+$SHAPE_ROTATOR_KIT_PATH         absolute path to the kit root
+$SHAPE_ROTATOR_KIT_AGENTS_MD    absolute path to THIS file
+```
+
+An agent not already working inside this repo should check those env
+vars first. If they're set, read
+`$SHAPE_ROTATOR_KIT_AGENTS_MD` for tool usage, then invoke tools via
+the `srk` binary (also on PATH after install-global).
+
+If those env vars are not set, fall back to asking the user where the
+kit lives, or skip these tools for now.
 
 ## What this repo is
 
@@ -14,6 +33,22 @@ When you clone and work on something in this repo, you're usually
 working *inside* one of the submodules. Respect each submodule's own
 `CLAUDE.md` / `AGENTS.md` / `README.md` for its conventions. This file
 is the monorepo-level overview.
+
+## Calling tools globally
+
+After `srk install-global`, every tool is invokable from anywhere:
+
+```bash
+srk research "question"          # DSPy research agent
+srk vox                          # voice transcription TUI
+srk doctor                       # health check
+srk update                       # bump submodule pins
+srk help                         # full command list
+```
+
+`shape-rotator-kit` is an alias for `srk` if your muscle memory prefers
+the explicit name. Extra args pass through, e.g.
+`srk research --parallel "..."`.
 
 ## Setup (run once)
 

@@ -88,12 +88,145 @@ case "$cmd" in
     exec voxterm "$@"
     ;;
 
+  install-global)
+    # Put `srk` and `shape-rotator-kit` on PATH, export SHAPE_ROTATOR_KIT_PATH
+    # in the shell rc, and (if ~/.claude/CLAUDE.md exists) point Claude at
+    # this kit's AGENTS.md. Idempotent via marker blocks. Reversible via
+    # `kit uninstall-global`.
+
+    BEGIN_MARK="# >>> shape-rotator-field-kit >>>"
+    END_MARK="# <<< shape-rotator-field-kit <<<"
+    LOCAL_BIN="$HOME/.local/bin"
+
+    printf "${BOLD}installing shape-rotator-field-kit globally${RESET}\n\n"
+
+    # 1) Symlinks
+    mkdir -p "$LOCAL_BIN"
+    ln -sfn "$KIT_ROOT/kit" "$LOCAL_BIN/srk"
+    ln -sfn "$KIT_ROOT/kit" "$LOCAL_BIN/shape-rotator-kit"
+    ok "symlinked $LOCAL_BIN/srk                → $KIT_ROOT/kit"
+    ok "symlinked $LOCAL_BIN/shape-rotator-kit  → $KIT_ROOT/kit"
+
+    if ! printf '%s' ":$PATH:" | grep -q ":$LOCAL_BIN:"; then
+      warn "$LOCAL_BIN is not on your PATH in this shell."
+      echo "   Add this line to your shell rc, then 'exec zsh' (or restart):"
+      echo "     export PATH=\"\$HOME/.local/bin:\$PATH\""
+    fi
+
+    # 2) Shell rc: export env vars
+    case "$SHELL" in
+      */zsh)  RC="$HOME/.zshrc"  ;;
+      */bash) RC="$HOME/.bashrc" ;;
+      *)      RC="" ;;
+    esac
+
+    if [ -n "$RC" ]; then
+      BLOCK="
+$BEGIN_MARK
+export SHAPE_ROTATOR_KIT_PATH=\"$KIT_ROOT\"
+export SHAPE_ROTATOR_KIT_AGENTS_MD=\"\$SHAPE_ROTATOR_KIT_PATH/AGENTS.md\"
+$END_MARK
+"
+      # Ensure the rc file exists
+      touch "$RC"
+      # Remove any prior block, then append the fresh one
+      python3 - "$RC" "$BEGIN_MARK" "$END_MARK" <<'PY' 2>/dev/null || warn "python3 not available; appending without dedup"
+import re, sys
+path, begin, end = sys.argv[1:4]
+txt = open(path).read()
+pattern = re.compile(r'\n?' + re.escape(begin) + r'.*?' + re.escape(end) + r'\n?', re.DOTALL)
+open(path, 'w').write(pattern.sub('\n', txt))
+PY
+      printf '%s' "$BLOCK" >> "$RC"
+      ok "wrote env-var block to $RC"
+    else
+      warn "could not detect shell (\$SHELL='$SHELL'). Skipping rc edit."
+      echo "   Add this to your shell config manually:"
+      echo "     export SHAPE_ROTATOR_KIT_PATH=\"$KIT_ROOT\""
+    fi
+
+    # 3) Claude Code pointer (only if ~/.claude/ exists)
+    if [ -d "$HOME/.claude" ]; then
+      CC_MD="$HOME/.claude/CLAUDE.md"
+      CC_BLOCK="
+$BEGIN_MARK
+## shape-rotator-field-kit
+
+A bundle of local-first tools (research agent, voice transcription, more).
+Lives at: $KIT_ROOT
+
+For tool usage, commands, and conventions, read:
+  $KIT_ROOT/AGENTS.md
+
+Quick commands from anywhere on this machine:
+  srk research \"question\"     DSPy ReAct research agent
+  srk vox                      voxterm voice transcription TUI
+  srk doctor                   health check
+  srk help                     full command list
+$END_MARK
+"
+      touch "$CC_MD"
+      python3 - "$CC_MD" "$BEGIN_MARK" "$END_MARK" <<'PY' 2>/dev/null || true
+import re, sys
+path, begin, end = sys.argv[1:4]
+txt = open(path).read()
+pattern = re.compile(r'\n?' + re.escape(begin) + r'.*?' + re.escape(end) + r'\n?', re.DOTALL)
+open(path, 'w').write(pattern.sub('\n', txt))
+PY
+      printf '%s' "$CC_BLOCK" >> "$CC_MD"
+      ok "appended field-kit pointer to $CC_MD"
+    else
+      printf "${DIM}(~/.claude/ not present; skipped Claude-specific pointer)${RESET}\n"
+    fi
+
+    echo
+    printf "${BOLD}done${RESET}\n"
+    echo "  · open a new shell (or 'exec \$SHELL') and try:  srk help"
+    echo "  · to undo this:                                 srk uninstall-global"
+    ;;
+
+  uninstall-global)
+    BEGIN_MARK="# >>> shape-rotator-field-kit >>>"
+    END_MARK="# <<< shape-rotator-field-kit <<<"
+    LOCAL_BIN="$HOME/.local/bin"
+
+    printf "${BOLD}removing global install${RESET}\n\n"
+
+    for link in "$LOCAL_BIN/srk" "$LOCAL_BIN/shape-rotator-kit"; do
+      if [ -L "$link" ]; then
+        rm -f "$link"
+        ok "removed symlink $link"
+      fi
+    done
+
+    for RC in "$HOME/.zshrc" "$HOME/.bashrc" "$HOME/.claude/CLAUDE.md"; do
+      [ -f "$RC" ] || continue
+      if grep -qF "$BEGIN_MARK" "$RC"; then
+        python3 - "$RC" "$BEGIN_MARK" "$END_MARK" <<'PY' 2>/dev/null || continue
+import re, sys
+path, begin, end = sys.argv[1:4]
+txt = open(path).read()
+pattern = re.compile(r'\n?' + re.escape(begin) + r'.*?' + re.escape(end) + r'\n?', re.DOTALL)
+open(path, 'w').write(pattern.sub('\n', txt))
+PY
+        ok "removed field-kit block from $RC"
+      fi
+    done
+
+    echo
+    printf "${BOLD}done${RESET}  · open a new shell to pick up the change.\n"
+    ;;
+
   help|-h|--help|"")
     cat <<EOF
 ${BOLD}kit${RESET} — shape-rotator-field-kit dispatcher
 
 ${BOLD}install & maintain${RESET}
   kit setup                 bootstrap every tool (idempotent)
+  kit install-global        add \`srk\` / \`shape-rotator-kit\` to PATH,
+                            export SHAPE_ROTATOR_KIT_PATH in your shell rc,
+                            point ~/.claude/CLAUDE.md at AGENTS.md (if present)
+  kit uninstall-global      reverse install-global cleanly
   kit update                bump every submodule to upstream main
   kit doctor                check each tool is installed + configured
 
