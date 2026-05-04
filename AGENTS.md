@@ -51,9 +51,15 @@ name. Extra args pass through, e.g. `rotate research --parallel "..."`.
 
 ## Setup (run once)
 
+See [`README.md`](./README.md) for the full install flow (`bash setup.sh`
+then optionally `./kit install-global`). The short version, for an agent
+bootstrapping a fresh clone:
+
 ```bash
 git clone --recurse-submodules https://github.com/dmarzzz/shape-rotator-field-kit.git
 cd shape-rotator-field-kit
+bash setup.sh
+./kit install-global   # optional; enables `rotate` from anywhere
 
 # If you forgot --recurse-submodules:
 git submodule update --init --recursive

@@ -9,6 +9,8 @@ bash setup.sh              # install every tool
 ./kit install-global       # make `rotate` callable from anywhere (optional)
 ```
 
+If you forgot `--recurse-submodules` on clone, run `git submodule update --init --recursive` before `setup.sh`.
+
 Then from anywhere on your machine:
 
 ```bash
