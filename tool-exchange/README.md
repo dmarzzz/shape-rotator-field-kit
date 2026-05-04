@@ -24,7 +24,7 @@ main field kit.
 
 ## Workshop
 
-Four sessions over the week of May 4-7, 3:00-4:30pm ET. dmarz runs
+Four sessions over the week of May 4-8, 3:00-4:30pm ET. dmarz runs
 each session. People share what they brought; we install each other's
 tools and use them live.
 
