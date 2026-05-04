@@ -116,7 +116,25 @@ case "$cmd" in
       miss "content-pipeline submodule missing. Run: kit setup"
       exit 1
     fi
-    exec python3 "$CP_RUN" "$@"
+    # Pick a Python ≥3.10, mirroring setup.sh's version detection so we
+    # don't accidentally run against a stale `python3` (e.g. 3.8) when a
+    # newer interpreter is available.
+    PY=""
+    for candidate in python3.12 python3.11 python3.10 python3; do
+      if command -v "$candidate" >/dev/null 2>&1; then
+        ver=$("$candidate" -c 'import sys; print("%d.%d" % sys.version_info[:2])')
+        major=${ver%.*}; minor=${ver#*.}
+        if [ "$major" -eq 3 ] && [ "$minor" -ge 10 ]; then
+          PY="$candidate"
+          break
+        fi
+      fi
+    done
+    if [ -z "$PY" ]; then
+      miss "python 3.10+ required for content-pipeline; none found on PATH"
+      exit 1
+    fi
+    exec "$PY" "$CP_RUN" "$@"
     ;;
 
   install-global)
