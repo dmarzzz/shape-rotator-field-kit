@@ -85,11 +85,11 @@ case "$cmd" in
 
   update)
     printf "${BOLD}bumping every submodule to upstream main${RESET}\n\n"
+    warn "pins will be updated in the working tree but NOT committed."
+    echo "  review changes, then:  git add . && git commit -m 'bump submodules'"
+    echo
     git submodule update --remote --recursive
     git submodule status | sed 's/^/  /'
-    echo
-    warn "pins are updated in the working tree but NOT committed."
-    echo "  review changes, then:  git add . && git commit -m 'bump submodules'"
     ;;
 
   research)
