@@ -119,6 +119,129 @@ case "$cmd" in
     exec python3 "$CP_RUN" "$@"
     ;;
 
+  install-skills)
+    # Symlink every `skills/<name>/` dir into ~/.claude/skills/ so the
+    # user can invoke them as `/<name>` from Claude Code. Idempotent.
+    SKILLS_SRC="$KIT_ROOT/skills"
+    SKILLS_DST="$HOME/.claude/skills"
+    if [ ! -d "$SKILLS_SRC" ]; then
+      miss "no skills/ dir in the kit yet"
+      exit 1
+    fi
+    mkdir -p "$SKILLS_DST"
+    printf "${BOLD}installing shape-rotator skills into $SKILLS_DST${RESET}\n\n"
+    n=0
+    for d in "$SKILLS_SRC"/*/; do
+      [ -d "$d" ] || continue
+      name="$(basename "$d")"
+      target="$SKILLS_DST/$name"
+      if [ -L "$target" ] || [ -e "$target" ]; then
+        existing_target="$(readlink "$target" 2>/dev/null || true)"
+        if [ "$existing_target" = "$d" ] || [ "$existing_target" = "${d%/}" ]; then
+          ok "skill $name (already linked)"; n=$((n+1)); continue
+        fi
+        warn "skill $name exists at $target (not our symlink) — skipping"
+        continue
+      fi
+      ln -s "${d%/}" "$target"
+      ok "skill $name → $target"
+      n=$((n+1))
+    done
+    echo
+    ok "installed $n skill(s). Invoke as /<name> from Claude Code."
+    ;;
+
+  install-app|field-guide|app)
+    # Download + install the field-guide Electron app for the user's
+    # platform. Pulls the latest release from GitHub, mounts the dmg /
+    # extracts the deb / etc., copies into the OS app dir. On macOS we
+    # also clear the quarantine attribute (the app is unsigned, so
+    # Gatekeeper otherwise refuses to open it without a manual context-
+    # menu Open).
+    REPO="dmarzzz/shape-rotator-field-guide"
+    APP_NAME="Shape Rotator OS"
+    printf "${BOLD}installing $APP_NAME${RESET}\n\n"
+    if ! command -v curl >/dev/null 2>&1; then
+      miss "curl is required"; exit 1
+    fi
+
+    # Resolve the platform-specific asset name.
+    uname_s="$(uname -s)"; uname_m="$(uname -m)"
+    case "$uname_s" in
+      Darwin)
+        case "$uname_m" in
+          arm64) asset_suffix="mac-arm64.dmg" ;;
+          x86_64) asset_suffix="mac-x64.dmg" ;;
+          *) miss "unsupported mac arch: $uname_m"; exit 1 ;;
+        esac
+        platform="mac"
+        ;;
+      Linux)
+        case "$uname_m" in
+          x86_64|amd64) asset_suffix="linux-amd64.deb" ;;
+          aarch64|arm64) asset_suffix="linux-arm64.deb" ;;
+          *) miss "unsupported linux arch: $uname_m"; exit 1 ;;
+        esac
+        platform="linux"
+        ;;
+      MINGW*|MSYS*|CYGWIN*) miss "use the Windows .exe installer from https://github.com/$REPO/releases/latest"; exit 1 ;;
+      *) miss "unsupported OS: $uname_s"; exit 1 ;;
+    esac
+
+    # Resolve the latest release tag — no auth needed for public repos.
+    api_url="https://api.github.com/repos/$REPO/releases/latest"
+    tag="$(curl -fsSL "$api_url" | sed -nE 's/.*"tag_name": "([^"]+)".*/\1/p' | head -1)"
+    if [ -z "$tag" ]; then miss "couldn't resolve latest release from $api_url"; exit 1; fi
+    version="${tag#v}"
+    asset_name="ShapeRotatorOS-${version}-${asset_suffix}"
+    asset_url="https://github.com/$REPO/releases/download/$tag/$asset_name"
+    ok "latest release: $tag · asset: $asset_name"
+
+    tmp="$(mktemp -d -t srfg-install.XXXXXX)"
+    out="$tmp/$asset_name"
+    echo "  downloading → $out"
+    curl -fL --progress-bar "$asset_url" -o "$out"
+    ok "downloaded ($(du -h "$out" | cut -f1))"
+
+    if [ "$platform" = "mac" ]; then
+      app_dst="/Applications/$APP_NAME.app"
+      echo "  mounting dmg…"
+      mount_out="$(hdiutil attach "$out" -nobrowse -readonly)"
+      vol="$(printf '%s\n' "$mount_out" | grep -E '/Volumes/' | sed -nE 's/.*	(\/Volumes\/.*)$/\1/p' | tail -1)"
+      if [ -z "$vol" ] || [ ! -d "$vol/$APP_NAME.app" ]; then
+        miss "could not find '$APP_NAME.app' inside the mounted dmg"
+        echo "$mount_out"
+        exit 1
+      fi
+      if [ -d "$app_dst" ]; then
+        warn "replacing existing $app_dst"
+        rm -rf "$app_dst"
+      fi
+      echo "  copying → $app_dst"
+      cp -R "$vol/$APP_NAME.app" "$app_dst"
+      hdiutil detach "$vol" -quiet 2>/dev/null || true
+      # macOS refuses to open the unsigned bundle without this; the
+      # error you'd otherwise see is "app is damaged and can't be
+      # opened" once Gatekeeper kicks in.
+      xattr -cr "$app_dst" 2>/dev/null || true
+      ok "installed at $app_dst"
+      echo
+      echo "  launch with:  open '$app_dst'"
+      echo "  or just look for 'Shape Rotator OS' in Spotlight"
+    elif [ "$platform" = "linux" ]; then
+      if command -v dpkg >/dev/null 2>&1; then
+        echo "  installing .deb (requires sudo)…"
+        sudo dpkg -i "$out" || warn "dpkg returned non-zero; you may need 'sudo apt -f install' to fix deps"
+        ok "installed via dpkg"
+        echo "  launch with:  shape-rotator-os"
+      else
+        miss "dpkg not found. .deb saved at $out — install manually or use an AppImage from https://github.com/$REPO/releases/$tag"
+      fi
+    fi
+
+    rm -rf "$tmp"
+    ;;
+
   install-global)
     # Put `srk` and `shape-rotator-kit` on PATH, export SHAPE_ROTATOR_KIT_PATH
     # in the shell rc, and (if ~/.claude/CLAUDE.md exists) point Claude at
@@ -278,6 +401,10 @@ ${BOLD}install & maintain${RESET}
   kit install-global        add \`rotate\` / \`shape-rotator-kit\` to PATH,
                             export SHAPE_ROTATOR_KIT_PATH in your shell rc,
                             point ~/.claude/CLAUDE.md at AGENTS.md (if present)
+  kit install-skills        symlink skills/* into ~/.claude/skills/ so they're
+                            invokable as /<name> from Claude Code
+  kit install-app           download + install the field-guide Electron app
+                            for the current platform (handles macOS Gatekeeper)
   kit uninstall-global      reverse install-global cleanly
   kit update                bump every submodule to upstream main
   kit doctor                check each tool is installed + configured
@@ -286,6 +413,10 @@ ${BOLD}invoke tools${RESET}
   kit research "question"   run the research-swarm agent
   kit vox                   launch voxterm
   kit content --trace ...   run content-pipeline (blog + thread + video)
+
+${BOLD}skills (after kit install-skills)${RESET}
+  /shape-rotator-profile    add/update your cohort profile + open a PR
+  /matrix-bot-setup         (stub) register your local agent on matrix
 
 ${DIM}All subcommands pass extra args through.
 Examples:

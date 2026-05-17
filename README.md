@@ -15,6 +15,8 @@ Then from anywhere on your machine:
 rotate research "what is Loopix?"   # DSPy ReAct research agent
 rotate vox                          # voxterm voice transcription TUI
 rotate content --trace run.json     # blog + tweet thread + explainer video
+rotate install-skills               # symlink skills/* → ~/.claude/skills/
+rotate install-app                  # install the field-guide Electron app
 rotate doctor                       # health check
 rotate update                       # bump submodules to upstream main
 rotate help                         # full command list
@@ -29,6 +31,38 @@ rotate help                         # full command list
 | [`research-swarm`](./research-swarm) | DSPy ReAct research agent |
 | [`voxterm`](./voxterm) | local voice transcription TUI with P2P |
 | [`content-pipeline`](./content-pipeline) | turns a research run or transcript into a blog post, tweet thread, and explainer video |
+| [`skills/`](./skills) | Claude Code skills — `/shape-rotator-profile` (add/update cohort profile + PR), `/matrix-bot-setup` (stub) |
+
+## Field-guide Electron app
+
+The cohort viewer / profile editor lives in a separate repo. Install it
+with:
+
+```bash
+rotate install-app
+```
+
+That pulls the latest [release](https://github.com/dmarzzz/shape-rotator-field-guide/releases/latest)
+for your platform, copies it into `/Applications` (macOS) or installs
+via `dpkg` (Linux), and clears the macOS quarantine flag so Gatekeeper
+doesn't refuse to open the unsigned bundle.
+
+**Manual install (any platform):** download the appropriate file from
+[releases/latest](https://github.com/dmarzzz/shape-rotator-field-guide/releases/latest):
+- macOS arm64: `ShapeRotatorOS-<version>-mac-arm64.dmg`
+- macOS x64: `ShapeRotatorOS-<version>-mac-x64.dmg`
+- Windows: `ShapeRotatorOS-<version>-win-x64.exe`
+- Linux: `ShapeRotatorOS-<version>-linux-amd64.deb` or `.AppImage`
+
+**macOS extra step** (the app is unsigned, so Gatekeeper otherwise
+refuses to open it with a misleading "is damaged and can't be opened"
+error): after dragging to /Applications, run
+
+```bash
+xattr -cr "/Applications/Shape Rotator OS.app"
+```
+
+Then launch normally.
 
 ## Bringing your own
 
