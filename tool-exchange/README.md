@@ -22,16 +22,6 @@ and safety, not taste) and merged. If a tool ends up being broadly
 useful to the cohort, it may be promoted to a full submodule in the
 main field kit.
 
-## Workshop
-
-Four sessions over the week of May 4-7, 3:00-4:30pm ET. dmarz runs
-each session. People share what they brought; we install each other's
-tools and use them live.
-
-- [`workshop/README.md`](./workshop/README.md) — schedule, format, what to expect
-- [`workshop/signups.md`](./workshop/signups.md) — sign up for a session by PR
-- [`workshop/slides.html`](./workshop/slides.html) — presentation (placeholder, linked when ready)
-
 ## Submissions
 
 Everything under [`submissions/`](./submissions/) is a listed tool.
@@ -51,6 +41,6 @@ moves work along during the program.
 
 Out of scope here: SaaS products that require someone else's paid
 account to try, closed-source binaries without source, anything
-that a workshop attendee couldn't clone and run on their laptop.
+that a cohort member couldn't clone and run on their laptop.
 Host those somewhere else; link from the submission if you'd like
 to reference them.

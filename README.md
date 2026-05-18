@@ -33,7 +33,7 @@ rotate help                         # full command list
 | [`content-pipeline`](./content-pipeline) | turns a research run or transcript into a blog post, tweet thread, and explainer video |
 | [`skills/`](./skills) | Claude Code skills — `/shape-rotator-profile` (add/update cohort profile + PR), `/matrix-bot-setup` (stub) |
 
-## Field-guide Electron app
+## Shape Rotator OS desktop app
 
 The cohort viewer / profile editor lives in a separate repo. Install it
 with:
