@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>tools · shape rotator</title>
+<meta name="description" content="Local-first tools from the shape rotator program. Pinned, hackable, mostly offline." />
+<meta property="og:title" content="shape rotator · tools" />
+<meta property="og:description" content="Local-first tools from the shape rotator program." />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="https://tools.shaperotator.xyz" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%230a0a0b'/%3E%3Cpath d='M3 8 L8 3 L13 8 L8 13 Z' fill='none' stroke='%23e5e5e7' stroke-width='1'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<header class="site-header">
+  <div class="mark">
+    <svg class="mark-glyph" viewBox="0 0 16 16" aria-hidden="true">
+      <path d="M3 8 L8 3 L13 8 L8 13 Z" fill="none" stroke="currentColor" stroke-width="1" />
+    </svg>
+    <span>shape rotator</span>
+    <span class="mark-sub">· tools</span>
+  </div>
+  <nav class="nav">
+    <a href="https://github.com/dmarzzz/shape-rotator-field-kit">field-kit</a>
+    <span class="dot">·</span>
+    <a href="https://shaperotator.xyz">shaperotator.xyz</a>
+  </nav>
+</header>
+
+<main class="page">
+  <section class="intro">
+    <h1>tools</h1>
+    <p>
+      A small bundle of local-first tools shipped with the
+      <a href="https://github.com/dmarzzz/shape-rotator-field-kit">shape-rotator-field-kit</a>.
+      Each one is pinned to a specific commit, mostly offline-capable, and
+      callable through a single <code>rotate</code> dispatcher once the kit
+      is installed.
+    </p>
+    <pre class="install"><span class="prompt">$</span> git clone --recurse-submodules https://github.com/dmarzzz/shape-rotator-field-kit.git
+<span class="prompt">$</span> cd shape-rotator-field-kit &amp;&amp; bash setup.sh
+<span class="prompt">$</span> ./kit install-global   <span class="muted"># optional: make `rotate` global</span></pre>
+  </section>
+
+  <section class="grid">
+    <!-- research-swarm -->
+    <article class="card">
+      <header class="card-head">
+        <span class="card-tag">cli · agent</span>
+        <h2><a href="https://github.com/dmarzzz/research-swarm">research-swarm</a></h2>
+      </header>
+      <p class="card-lede">DSPy ReAct research agent that thinks out loud, cites sources, and remembers what you asked last time.</p>
+      <p class="card-body">
+        Ask a question. A ReAct loop picks from ~12 tools (web / arXiv /
+        GitHub / fetch / verify citations) until it has enough to write a
+        grounded synthesis. Every page lands in a local SQLite FTS5 index
+        so tomorrow's adjacent queries answer from yesterday's archive.
+      </p>
+      <pre class="card-run"><span class="prompt">$</span> rotate research "what is Loopix?"</pre>
+      <footer class="card-foot">
+        <span class="meta">macOS · Linux · Windows</span>
+        <a class="link" href="https://github.com/dmarzzz/research-swarm">repo →</a>
+      </footer>
+    </article>
+
+    <!-- voxterm -->
+    <article class="card">
+      <header class="card-head">
+        <span class="card-tag">tui · voice</span>
+        <h2><a href="https://github.com/dmarzzz/VoxTerm">voxterm</a></h2>
+      </header>
+      <p class="card-lede">Local real-time voice transcription with speaker diarization and P2P sharing. Fully offline.</p>
+      <p class="card-body">
+        Captures mic audio, transcribes in real time, writes a timestamped
+        markdown transcript to <code>~/Documents/voxterm-transcripts/</code>.
+        No audio on disk. Voice profiles AES-256 encrypted, key in macOS
+        Keychain. Party mode shares the live stream across LAN — no relay.
+      </p>
+      <pre class="card-run"><span class="prompt">$</span> rotate vox</pre>
+      <footer class="card-foot">
+        <span class="meta">macOS Apple Silicon</span>
+        <a class="link" href="https://github.com/dmarzzz/VoxTerm">repo →</a>
+      </footer>
+    </article>
+
+    <!-- content-pipeline -->
+    <article class="card">
+      <header class="card-head">
+        <span class="card-tag">cli · agent</span>
+        <h2><a href="https://github.com/dmarzzz/content-pipeline">content-pipeline</a></h2>
+      </header>
+      <p class="card-lede">Turn a research run, transcript, or markdown source into a blog post, tweet thread, and explainer video.</p>
+      <p class="card-body">
+        Three pluggable axes: input adapters (research trace / voxterm
+        transcript / markdown), output formats (blog, thread, explainer),
+        and an aesthetic overlay. Every run snapshots its prompts so
+        bumping the pipeline tomorrow never invalidates yesterday's outputs.
+      </p>
+      <pre class="card-run"><span class="prompt">$</span> rotate content --trace run.json</pre>
+      <footer class="card-foot">
+        <span class="meta">macOS · Linux · Windows</span>
+        <a class="link" href="https://github.com/dmarzzz/content-pipeline">repo →</a>
+      </footer>
+    </article>
+
+    <!-- shape-rotator-os -->
+    <article class="card">
+      <header class="card-head">
+        <span class="card-tag">desktop app</span>
+        <h2><a href="https://github.com/dmarzzz/shape-rotator-os">shape-rotator-os</a></h2>
+      </header>
+      <p class="card-lede">Electron cohort viewer / profile editor. The "OS" you see at <a href="https://shaperotator.xyz">shaperotator.xyz</a>, but local.</p>
+      <p class="card-body">
+        Browse the cohort, edit your own profile, and (eventually) launch the
+        rest of the kit from one place. Unsigned macOS build — after dragging
+        to /Applications run <code>xattr -cr "/Applications/Shape Rotator OS.app"</code>.
+      </p>
+      <pre class="card-run"><span class="prompt">$</span> rotate install-app</pre>
+      <footer class="card-foot">
+        <span class="meta">macOS · Linux · Windows</span>
+        <a class="link" href="https://github.com/dmarzzz/shape-rotator-os/releases/latest">releases →</a>
+      </footer>
+    </article>
+
+    <!-- skill: shape-rotator-profile -->
+    <article class="card">
+      <header class="card-head">
+        <span class="card-tag">claude-code skill</span>
+        <h2><a href="https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/skills/shape-rotator-profile">/shape-rotator-profile</a></h2>
+      </header>
+      <p class="card-lede">Add or update your cohort profile and open a PR — without leaving your agent.</p>
+      <p class="card-body">
+        Walks you through the profile fields, finds your existing record if
+        any, and opens a PR against <code>dmarzzz/shape-rotator-os</code>.
+        Requires <code>gh</code> CLI authenticated.
+      </p>
+      <pre class="card-run"><span class="prompt">$</span> rotate install-skills
+<span class="prompt">&gt;</span> /shape-rotator-profile</pre>
+      <footer class="card-foot">
+        <span class="meta">claude code</span>
+        <a class="link" href="https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/skills/shape-rotator-profile">source →</a>
+      </footer>
+    </article>
+
+    <!-- skill: matrix-bot-setup -->
+    <article class="card">
+      <header class="card-head">
+        <span class="card-tag">claude-code skill</span>
+        <h2><a href="https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/skills/matrix-bot-setup">/matrix-bot-setup</a></h2>
+      </header>
+      <p class="card-lede">Bootstrap a Matrix bot on <code>mtrx.shaperotator.xyz</code> with working E2EE.</p>
+      <p class="card-body">
+        Registers your local agent as a verified device on the cohort
+        homeserver — cross-signed from your existing Element, so the rest
+        of the cohort sees it as a trusted account (no red shields).
+      </p>
+      <pre class="card-run"><span class="prompt">&gt;</span> /matrix-bot-setup</pre>
+      <footer class="card-foot">
+        <span class="meta">claude code</span>
+        <a class="link" href="https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/skills/matrix-bot-setup">source →</a>
+      </footer>
+    </article>
+
+    <!-- tool-exchange -->
+    <article class="card card--exchange">
+      <header class="card-head">
+        <span class="card-tag">↘ submit yours</span>
+        <h2><a href="https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/tool-exchange">tool-exchange</a></h2>
+      </header>
+      <p class="card-lede">Shared directory for tools cohort members are contributing. PR a markdown file and your tool shows up here.</p>
+      <p class="card-body">
+        Drop a submission under
+        <code>tool-exchange/submissions/&lt;your-tool&gt;.md</code> following
+        the template. There's also a 4-session workshop series during the
+        program — see <code>tool-exchange/workshop/</code>.
+      </p>
+      <footer class="card-foot">
+        <span class="meta">PRs welcome</span>
+        <a class="link" href="https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/tool-exchange/submissions">submit →</a>
+      </footer>
+    </article>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <span>shape rotator · tools</span>
+  <span class="dot">·</span>
+  <a href="https://github.com/dmarzzz/shape-rotator-field-kit">source</a>
+</footer>
+</body>
+</html>
