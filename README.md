@@ -31,7 +31,7 @@ rotate help                         # full command list
 | [`research-swarm`](./research-swarm) | DSPy ReAct research agent |
 | [`voxterm`](./voxterm) | local voice transcription TUI with P2P |
 | [`content-pipeline`](./content-pipeline) | turns a research run or transcript into a blog post, tweet thread, and explainer video |
-| [`skills/`](./skills) | Claude Code skills — `/shape-rotator-profile` (add/update cohort profile + PR), `/matrix-bot-setup` (stub) |
+| [`skills/`](./skills) | Agent skills — `/shape-rotator-profile` (add/update cohort profile + PR), `/matrix-bot-setup` (stub), `/smithers` (workflow orchestration) |
 
 ## Shape Rotator OS desktop app
 
