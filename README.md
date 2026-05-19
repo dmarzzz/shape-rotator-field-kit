@@ -14,14 +14,16 @@ bash setup.sh --install-python
 Then from anywhere on your machine:
 
 ```bash
-rotate research "what is Loopix?"   # DSPy ReAct research agent
-rotate vox                          # voxterm voice transcription TUI
-rotate content --trace run.json     # blog + tweet thread + explainer video
-rotate install-skills               # symlink skills/* → ~/.claude/skills/
-rotate install-app                  # install Shape Rotator OS Electron app
-rotate doctor                       # health check
-rotate update                       # bump submodules to upstream main
-rotate help                         # full command list
+rotate research "what is Loopix?"                 # auto backend
+rotate research --backend dspy "what is Loopix?"  # DSPy backend
+rotate research --backend codex "what is Loopix?" # Codex app-server backend
+rotate vox                                        # voxterm voice transcription TUI
+rotate content --trace run.json                   # blog + tweet thread + explainer video
+rotate install-skills                             # symlink skills/* → ~/.claude/skills/
+rotate install-app                                # install Shape Rotator OS Electron app
+rotate doctor                                     # health check
+rotate update                                     # bump submodules to upstream main
+rotate help                                       # full command list
 ```
 
 `shape-rotator-kit` is the same binary if you prefer the explicit name.
@@ -30,7 +32,7 @@ rotate help                         # full command list
 
 | tool | what it is |
 |---|---|
-| [`research-swarm`](./research-swarm) | DSPy ReAct research agent |
+| [`research-swarm`](./research-swarm) | DSPy / Codex ReAct research harness |
 | [`voxterm`](./voxterm) | local voice transcription TUI with P2P |
 | [`content-pipeline`](./content-pipeline) | turns a research run or transcript into a blog post, tweet thread, and explainer video |
 | [`skills/`](./skills) | Agent skills — `/shape-rotator-profile` (add/update cohort profile + PR), `/matrix-bot-setup` (stub), `/smithers` (workflow orchestration) |
