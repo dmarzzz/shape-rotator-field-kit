@@ -28,14 +28,14 @@ rotate help                                       # full command list
 
 `shape-rotator-kit` is the same binary if you prefer the explicit name.
 
-`install-global` also exports `$SHAPE_ROTATOR_KIT_PATH` and `$SHAPE_ROTATOR_KIT_AGENTS_MD` in your shell, and (if you have Claude Code) appends a pointer to the kit's [`AGENTS.md`](./AGENTS.md) in your `~/.claude/CLAUDE.md` so any agent started anywhere knows where these tools live. Reverse with `rotate uninstall-global`.
+`install-global` also exports `$SHAPE_ROTATOR_KIT_PATH` and `$SHAPE_ROTATOR_KIT_AGENTS_MD` in your shell, and (if you have Claude Code) appends a pointer to the kit's [`AGENTS.md`](https://github.com/dmarzzz/shape-rotator-field-kit/blob/main/AGENTS.md) in your `~/.claude/CLAUDE.md` so any agent started anywhere knows where these tools live. Reverse with `rotate uninstall-global`.
 
 | tool | what it is |
 |---|---|
-| [`research-swarm`](./research-swarm) | DSPy / Codex ReAct research harness |
-| [`voxterm`](./voxterm) | local voice transcription TUI with P2P |
-| [`content-pipeline`](./content-pipeline) | turns a research run or transcript into a blog post, tweet thread, and explainer video |
-| [`skills/`](./skills) | Agent skills — `/shape-rotator-profile` (add/update cohort profile + PR), `/matrix-bot-setup` (stub), `/smithers` (workflow orchestration) |
+| [`research-swarm`](https://github.com/dmarzzz/research-swarm) | DSPy / Codex ReAct research harness |
+| [`voxterm`](https://github.com/dmarzzz/VoxTerm) | local voice transcription TUI with P2P |
+| [`content-pipeline`](https://github.com/dmarzzz/content-pipeline) | turns a research run or transcript into a blog post, tweet thread, and explainer video |
+| [`skills/`](https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/skills) | Agent skills — `/shape-rotator-profile` (add/update cohort profile + PR), `/matrix-bot-setup` (stub), `/smithers` (workflow orchestration) |
 
 ## Shape Rotator OS desktop app
 
@@ -70,11 +70,11 @@ Then launch normally.
 
 ## Bringing your own
 
-[`tool-exchange/`](./tool-exchange) is the shared directory for tools
+[`tool-exchange/`](https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/tool-exchange) is the shared directory for tools
 cohort members are contributing. PR a markdown file under
-[`tool-exchange/submissions/`](./tool-exchange/submissions) to list
+[`tool-exchange/submissions/`](https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/tool-exchange/submissions) to list
 your tool. There's also a 4-session workshop series the week of May
-4-8 — see [`tool-exchange/workshop/`](./tool-exchange/workshop) for
+4-8 — see [`tool-exchange/workshop/`](https://github.com/dmarzzz/shape-rotator-field-kit/tree/main/tool-exchange/workshop) for
 the schedule and the signup.
 
-See [`AGENTS.md`](./AGENTS.md) for how agents use these tools.
+See [`AGENTS.md`](https://github.com/dmarzzz/shape-rotator-field-kit/blob/main/AGENTS.md) for how agents use these tools.
