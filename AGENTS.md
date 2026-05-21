@@ -39,11 +39,13 @@ is the monorepo-level overview.
 After `./kit install-global`, every tool is invokable from anywhere:
 
 ```bash
-rotate research "question"       # DSPy research agent
-rotate vox                       # voice transcription TUI
-rotate doctor                    # health check
-rotate update                    # bump submodule pins
-rotate help                      # full command list
+rotate research "question"                 # auto backend
+rotate research --backend dspy "question"  # DSPy backend
+rotate research --backend codex "question" # Codex app-server backend
+rotate vox                                 # voice transcription TUI
+rotate doctor                              # health check
+rotate update                              # bump submodule pins
+rotate help                                # full command list
 ```
 
 `shape-rotator-kit` is an alias for `rotate` if you prefer the explicit
@@ -103,24 +105,33 @@ git submodule update --init --recursive
   quarantine bit. Without it, Gatekeeper will refuse to open the app
   with a misleading "is damaged and can't be opened" error.
 
-### `research-swarm/` — DSPy ReAct research agent
+### `research-swarm/` — DSPy / Codex ReAct research harness
 
 - **Use when:** the user needs a grounded, cited answer to an open
   research question, or a literature survey, or a "explain X and
   compare it to Y" kind of ask.
-- **What it does:** picks tools (web / arXiv / GitHub / fetch / ...)
-  across a ReAct loop until it has enough to write a synthesis with
-  inline citations. Every page it reads goes into `~/world_knowledge/`
-  and an SQLite FTS5 index, so adjacent queries later go faster and
-  answer from material it already trusts.
+- **What it does:** runs a ReAct loop that chooses search, fetch, arXiv,
+  GitHub, archive, and citation-checking tools until it can write a
+  synthesis with inline citations. There are two reasoning backends:
+  DSPy ReAct and Codex app-server. In both modes, Python executes the
+  research tools directly. `RA_BACKEND=auto` uses DSPy when `.env` or the
+  shell provides an LM config; otherwise it uses Codex when `codex
+  app-server` is available. Every fetched page is written to
+  `~/world_knowledge/` and indexed with SQLite FTS5 for later local
+  search so adjacent queries later go faster and answer from material it already trusts.
 - **Quickest run:**
   ```bash
   cd research-swarm
   python3.12 -m venv .venv && source .venv/bin/activate
-  pip install -e .
-  cp .env.example .env                  # set LM_MODEL or ANTHROPIC_API_KEY
+  pip install -e '.[codex]'
+  cp .env.example .env                  # RA_BACKEND=auto; add LM_MODEL/key for DSPy
+  research-agent doctor
   research-agent "your question"
   ```
+- **Backend selection:** set `RA_BACKEND=auto`, `RA_BACKEND=dspy`, or
+  `RA_BACKEND=codex` in `.env` for the default. CLI flags override it:
+  `research-agent --backend dspy "q"` or
+  `research-agent --backend codex "q"`.
 - **Modes:** `research-agent "q"` (single ReAct loop) or
   `research-agent --parallel "q"` (STORM decompose-fan-out-merge).
 - **Library use (for your own agent):**
@@ -203,9 +214,11 @@ These tools are designed to compose. Some common patterns:
   `content-pipeline/output/<date>-<slug>/`. All three are searchable
   locally; nothing leaves your machine unless you publish it.
 - **Offline friendly:** voxterm is fully offline. research-swarm with
-  an Ollama LM + an empty query cache still wants network the first
-  time, but answers locally thereafter. content-pipeline itself is
-  offline; only your agent's underlying LM might hit the network.
+  Codex uses the user's Codex subscription; with `--backend dspy` and
+  an Ollama LM it can use a local model. An empty query cache still
+  wants network the first time, but answers locally thereafter.
+  content-pipeline itself is offline; only your agent's underlying LM
+  might hit the network.
 
 ## Tool Exchange (cohort-contributed tools)
 
@@ -248,7 +261,9 @@ If the user is asking about "what's out there" during the program,
 - No tool in this kit requires a cloud account to run. API keys are
   grudging exceptions where a provider is the only reasonable path
   (GitHub for higher rate limits, Anthropic/OpenAI if you prefer a
-  hosted LM). Ollama is always a valid free fallback.
+  hosted LM). The Codex backend can use the user's existing ChatGPT Plus
+  or Pro subscription through Codex. Ollama is always a valid free
+  fallback.
 
 ## When to update a submodule
 

@@ -8,7 +8,7 @@
 #   rotate setup               run the full installer (same as `bash setup.sh`)
 #   rotate doctor              check every tool is installed and reachable
 #   rotate update              bump every submodule to its upstream main
-#   rotate research "..."      invoke the research-swarm agent
+#   rotate research "..."      invoke research-swarm
 #   rotate vox                 launch voxterm
 #   rotate help                this help
 
@@ -67,15 +67,18 @@ case "$cmd" in
     else
       miss "content-pipeline submodule missing — run 'kit setup'"
     fi
-    # .env sanity
-    if [ -f "$KIT_ROOT/research-swarm/.env" ]; then
-      if grep -qE '^(LM_MODEL|ANTHROPIC_API_KEY)=' "$KIT_ROOT/research-swarm/.env"; then
-        ok "research-swarm/.env  LM configured"
+    # Backend sanity. Auto uses DSPy with an LM config, otherwise Codex
+    # when codex app-server is available.
+    if [ -x "$KIT_ROOT/research-swarm/.venv/bin/research-agent" ]; then
+      echo
+      printf "${BOLD}research backend:${RESET}\n"
+      if "$KIT_ROOT/research-swarm/.venv/bin/research-agent" doctor; then
+        ok "research-agent doctor passed"
       else
-        warn "research-swarm/.env  exists but no LM_MODEL / ANTHROPIC_API_KEY set"
+        warn "research-agent doctor reported no ready backend"
       fi
     else
-      warn "research-swarm/.env  missing — copy .env.example and set an LM"
+      warn "research-agent doctor skipped — research-swarm venv missing"
     fi
     # submodules pinned
     echo
@@ -328,10 +331,12 @@ For tool usage, commands, and conventions, read:
   $KIT_ROOT/AGENTS.md
 
 Quick commands from anywhere on this machine:
-  rotate research \"question\"  DSPy ReAct research agent
-  rotate vox                   voxterm voice transcription TUI
-  rotate doctor                health check
-  rotate help                  full command list
+  rotate research \"question\"                 auto backend
+  rotate research --backend dspy \"question\"  DSPy backend
+  rotate research --backend codex \"question\" Codex app-server backend
+  rotate vox                                  voxterm voice transcription TUI
+  rotate doctor                               health check
+  rotate help                                 full command list
 
 \`shape-rotator-kit\` is the same binary if you prefer the explicit name.
 $END_MARK
@@ -410,7 +415,9 @@ ${BOLD}install & maintain${RESET}
   kit doctor                check each tool is installed + configured
 
 ${BOLD}invoke tools${RESET}
-  kit research "question"   run the research-swarm agent
+  kit research "question"                 run research-swarm with auto backend
+  kit research --backend dspy "question"  use DSPy backend
+  kit research --backend codex "question" use Codex app-server backend
   kit vox                   launch voxterm
   kit content --trace ...   run content-pipeline (blog + thread + video)
 
