@@ -61,7 +61,7 @@ git submodule update --init --recursive
 
 ## The tools
 
-### `skills/` — Claude Code skills for cohort workflows
+### `skills/` — agent skills for cohort workflows
 
 - **What it is:** a directory of `<name>/SKILL.md` files Claude Code can
   invoke as `/<name>`. Currently shipped:
@@ -71,9 +71,15 @@ git submodule update --init --recursive
     if any, preserves fields the user doesn't touch.
   - `matrix-bot-setup` — register the user's local agent on the cohort
     Matrix server. Currently a stub (homeserver + room IDs pending).
+  - `smithers` — durable AI workflow orchestration. Use it to run,
+    monitor, inspect, and manage Smithers workflow executions.
 - **Install:** `rotate install-skills` symlinks each `skills/<name>/`
   into `~/.claude/skills/`. After that, invoke them via `/<name>` from
   Claude Code.
+- **Repo-local surfaces:** checked-in `.claude/skills/`,
+  `.crush/skills/`, and `.windsurf/skills/` entries are symlinks back
+  to `skills/<name>/`. Keep the canonical skill content under `skills/`;
+  update the symlinks when adding or removing skills.
 - **What NOT to do:** don't hand-roll PR scripts when the user wants to
   update their profile — invoke `/shape-rotator-profile` so the schema
   + sensitivity rules are applied uniformly. Don't add Matrix glue
