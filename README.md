@@ -6,6 +6,8 @@ Tools for the shape rotator program. Each pinned to a specific commit.
 git clone --recurse-submodules https://github.com/dmarzzz/shape-rotator-field-kit.git
 cd shape-rotator-field-kit
 bash setup.sh              # install every tool
+# or, on a fresh machine without python3.12:
+bash setup.sh --install-python
 ./kit install-global       # make `rotate` callable from anywhere (optional)
 ```
 

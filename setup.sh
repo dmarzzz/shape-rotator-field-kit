@@ -6,11 +6,12 @@
 #
 # Usage:
 #   bash setup.sh
+#   bash setup.sh --install-python
 #
 # What it does:
 #   1. Pulls every git submodule to its pinned commit.
 #   2. Runs voxterm's own installer (macOS Apple-Silicon only; skipped elsewhere).
-#   3. Sets up research-swarm in an isolated venv.
+#   3. Sets up research-swarm in an isolated Python 3.12 venv.
 #   4. Creates ./bin/research-agent as a thin wrapper around that venv.
 #   5. Copies research-swarm/.env.example to research-swarm/.env if missing.
 #   6. Prints a short "what to do next" cheat sheet.
@@ -19,6 +20,7 @@
 #   - Touch your shell config. You decide whether to add ./bin to PATH.
 #   - Overwrite an existing .env file.
 #   - Install anything globally other than what voxterm itself installs.
+#   - Install uv or Python unless you pass --install-python.
 
 set -euo pipefail
 
@@ -37,6 +39,33 @@ warn()  { printf "${YELLOW}!${RESET} %s\n" "$*" >&2; }
 fail()  { printf "${RED}✗${RESET} %s\n" "$*" >&2; exit 1; }
 heading() { printf "\n${BOLD}%s${RESET}\n" "$*"; }
 
+# ── Args ─────────────────────────────────────────────────────────────────
+
+INSTALL_PYTHON=false
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --install-python)
+      INSTALL_PYTHON=true
+      ;;
+    -h|--help)
+      cat <<EOF
+Usage:
+  bash setup.sh [--install-python]
+
+Options:
+  --install-python   If python3.12 is missing, install uv if needed,
+                     then install Python 3.12 with uv.
+EOF
+      exit 0
+      ;;
+    *)
+      fail "unknown option: $1"
+      ;;
+  esac
+  shift
+done
+
 # ── Locate self ───────────────────────────────────────────────────────────
 
 KIT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -51,19 +80,40 @@ step "checking prerequisites"
 
 command -v git >/dev/null 2>&1 || fail "git not found — install git first"
 
-# Python: need 3.10+, prefer 3.12
+# The whole kit standardizes on Python 3.12 because voxterm declares
+# that floor today. macOS/Xcode may only expose /usr/bin/python3.9.
 PYTHON=""
-for candidate in python3.12 python3.11 python3.10 python3; do
-  if command -v "$candidate" >/dev/null 2>&1; then
-    ver=$("$candidate" -c 'import sys; print("%d.%d" % sys.version_info[:2])')
-    major=${ver%.*}; minor=${ver#*.}
-    if [ "$major" -eq 3 ] && [ "$minor" -ge 10 ]; then
-      PYTHON="$candidate"
-      break
+if command -v python3.12 >/dev/null 2>&1; then
+  PYTHON="$(command -v python3.12)"
+elif $INSTALL_PYTHON; then
+  UV=""
+  if command -v uv >/dev/null 2>&1; then
+    UV="$(command -v uv)"
+  elif [ -x "$HOME/.local/bin/uv" ]; then
+    UV="$HOME/.local/bin/uv"
+  else
+    command -v curl >/dev/null 2>&1 || fail "python3.12 not found and curl is required to install uv"
+    step "installing uv"
+    curl -LsSf https://astral.sh/uv/install.sh | UV_INSTALL_DIR="$HOME/.local/bin" UV_NO_MODIFY_PATH=1 sh
+    if [ -x "$HOME/.local/bin/uv" ]; then
+      UV="$HOME/.local/bin/uv"
+    else
+      fail "uv install completed, but uv was not found at $HOME/.local/bin/uv"
     fi
   fi
-done
-[ -n "$PYTHON" ] || fail "python 3.10+ required, none found"
+
+  step "installing Python 3.12 with uv"
+  "$UV" python install 3.12
+  PYTHON="$("$UV" python find 3.12 --managed-python)"
+else
+  fail "python3.12 required, none found.
+Rerun with this flag to install uv if needed, then Python 3.12:
+  bash setup.sh --install-python
+
+Or install uv manually first:
+  curl -LsSf https://astral.sh/uv/install.sh | sh"
+fi
+
 ok "python: $PYTHON ($("$PYTHON" --version))"
 ok "git:    $(git --version)"
 
@@ -86,11 +136,12 @@ elif command -v voxterm >/dev/null 2>&1; then
   ok "voxterm already installed at $(command -v voxterm)"
 else
   step "running voxterm installer"
+  PYTHON_BIN_DIR="$(dirname "$PYTHON")"
   if [ -f voxterm/install.sh ]; then
-    bash voxterm/install.sh
+    PATH="$PYTHON_BIN_DIR:$PATH" bash voxterm/install.sh
   else
     # Fallback to upstream installer if the submodule doesn't ship one
-    curl -fsSL https://raw.githubusercontent.com/dmarzzz/VoxTerm/main/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/dmarzzz/VoxTerm/main/install.sh | PATH="$PYTHON_BIN_DIR:$PATH" bash
   fi
   ok "voxterm installed"
 fi
